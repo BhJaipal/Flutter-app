@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/main.dart';
 
 class ToDoList extends StatefulWidget {
   const ToDoList({super.key});
@@ -28,9 +29,37 @@ class _ToDoListState extends State<ToDoList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: NavigationDrawer(
+        backgroundColor: Colors.lightBlueAccent.shade400,
+        children: [
+          ListTile(
+            title: const Text("Home"),
+            leading: const Icon(Icons.home),
+            tileColor: Colors.lightBlueAccent.shade200,
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const MyApp())),
+          ),
+          ListTile(
+            title: const Text("About"),
+            leading: const Icon(Icons.article),
+            tileColor: Colors.lightBlueAccent.shade200,
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const ToDoList())),
+          ),
+        ],
+      ),
       appBar: AppBar(
         title: const Text("About"),
         backgroundColor: Colors.lightBlueAccent,
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            icon: const Icon(Icons.menu),
+          ),
+        ),
       ),
       body: Form(
         child: Column(
@@ -52,7 +81,10 @@ class _ToDoListState extends State<ToDoList> {
                   style: const ButtonStyle(
                       shape: MaterialStatePropertyAll(CircleBorder())),
                   onPressed: addItem,
-                  child: const Icon(Icons.add),
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.blue,
+                  ),
                 ),
               ],
             ),
@@ -62,18 +94,16 @@ class _ToDoListState extends State<ToDoList> {
                 shrinkWrap: true,
                 semanticChildCount: 3,
                 scrollDirection: Axis.vertical,
-                children: [
-                  ...tasks.map((e) {
-                    return TODO(
-                      taskName: e,
-                      deleteFn: () {
-                        setState(() {
-                          tasks.remove(e);
-                        });
-                      },
-                    );
-                  }),
-                ],
+                children: tasks.map((e) {
+                  return TODO(
+                    taskName: e,
+                    deleteFn: () {
+                      setState(() {
+                        tasks.remove(e);
+                      });
+                    },
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -96,7 +126,7 @@ class TODO extends StatefulWidget {
 class _TODOState extends State<TODO> {
   var isDone = false;
   Color doneColor = Colors.red;
-  Color taskColor = Colors.red.shade300;
+  Color taskColor = const Color.fromARGB(255, 228, 191, 194);
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -106,20 +136,33 @@ class _TODOState extends State<TODO> {
         fontWeight: FontWeight.bold,
         fontSize: 18,
       ),
+      style: ListTileStyle.list,
       dense: true,
       tileColor: taskColor,
-      trailing: Checkbox(
-        activeColor: Colors.greenAccent,
-        value: isDone,
-        onChanged: (value) {
-          setState(() {
-            isDone = value!;
-            doneColor = isDone ? Colors.blue : Colors.red;
-            taskColor = isDone
-                ? const Color.fromARGB(255, 157, 208, 250)
-                : const Color.fromARGB(255, 228, 191, 194);
-          });
-        },
+      trailing: IconButton(
+        icon: const Icon(Icons.more_vert),
+        onPressed: () => showDialog<String>(
+          context: context,
+          builder: (context) => SimpleDialog(
+            children: [
+              SimpleDialogOption(
+                child: Checkbox(
+                  activeColor: Colors.greenAccent,
+                  value: isDone,
+                  onChanged: (value) {
+                    setState(() {
+                      isDone = value!;
+                      doneColor = isDone ? Colors.blue : Colors.red;
+                      taskColor = isDone
+                          ? const Color.fromARGB(255, 157, 208, 250)
+                          : const Color.fromARGB(255, 228, 191, 194);
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       onTap: widget.deleteFn,
     );

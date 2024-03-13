@@ -51,7 +51,37 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: NavigationDrawer(
+        backgroundColor: Colors.lightBlueAccent.shade400,
+        children: [
+          ListTile(
+            title: const Text("Home"),
+            leading: const Icon(Icons.home),
+            tileColor: Colors.lightBlueAccent.shade200,
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const MyApp())),
+          ),
+          ListTile(
+            title: const Text("About"),
+            leading: const Icon(Icons.article),
+            tileColor: Colors.lightBlueAccent.shade200,
+            onTap: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const ToDoList())),
+          ),
+        ],
+      ),
       appBar: AppBar(
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+            );
+          },
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
@@ -61,12 +91,6 @@ class _MyHomePageState extends State<MyHomePage> {
           // action in the IDE, or press "p" in the console), to see the
           // wireframe for each widget.
           children: <Widget>[
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const ToDoList()));
-                },
-                child: const Text("Go to about page")),
             const Padding(
               padding: EdgeInsets.fromLTRB(60, 10, 60, 10),
               child: Text(
