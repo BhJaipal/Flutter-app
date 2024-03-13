@@ -37,14 +37,12 @@ class _MyHomePageState extends State<MyHomePage> {
   void _incrementCounter() {
     setState(() {
       _counter++;
-      debugPrint(_counter.toString());
     });
   }
 
   void _decrementCounter() {
     setState(() {
       _counter--;
-      debugPrint(_counter.toString());
     });
   }
 
