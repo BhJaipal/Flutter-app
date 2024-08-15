@@ -1,8 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:linux_web_app/create.dart';
+import "package:sqflite_common_ffi/sqflite_ffi.dart";
 
-void main() {
+Future<void> main() {
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
   runApp(const MyApp());
+  return Future.value();
 }
 
 class MyApp extends StatelessWidget {
@@ -14,7 +20,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey, background: Colors.black38),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color.fromARGB(255, 2, 163, 243),
+            background: Colors.black87),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Cosmic Web App'),
@@ -32,20 +40,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  void _decrementCounter() {
-    setState(() {
-      _counter--;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -85,48 +79,58 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: ListView(
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.fromLTRB(60, 10, 60, 10),
-              child: Text(
-                'You have pushed the button this many times:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                FloatingActionButton(
-                  onPressed: _decrementCounter,
-                  tooltip: "Decrement",
-                  child: const Icon(Icons.remove),
-                ),
-                FloatingActionButton(
-                  child: Text(
-                    '$_counter',
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                  onPressed: () {},
-                ),
-                FloatingActionButton(
-                  onPressed: _incrementCounter,
-                  tooltip: 'Increment',
-                  child: const Icon(Icons.add),
-                ),
-              ],
-            ),
-          ],
-        ),
+            // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+            // action in the IDE, or press "p" in the console), to see the
+            // wireframe for each widget.
+            children: <Widget>[
+              FutureBuilder<List<App>>(
+                future: getApps(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator(); // Show a loading indicator while fetching data
+                  } else if (snapshot.hasError) {
+                    return Text(
+                      'Error loading apps: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.redAccent),
+                    );
+                  } else if (!snapshot.hasData) {
+                    return const Text(
+                      'No apps found.',
+                      style: TextStyle(color: Colors.redAccent),
+                    );
+                  } else {
+                    final apps = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: apps.length,
+                      itemBuilder: (context, index) {
+                        final app = apps[index];
+                        return ListTile(
+                          tileColor: Colors.lightBlueAccent,
+                          leading: Image.asset('assets/${app.logo}'),
+                          title: Text(app.name),
+                          subtitle: Text(app.url),
+                        );
+                      },
+                    );
+                  }
+                },
+              )
+            ]),
       ),
     );
   }
 }
-class App {
-  String name;
-  String url;
-  String logo;
-  App({required this.name, required this.url, required this.logo});
+
+Future<List<App>> getApps() async {
+  final db = await database;
+  final List<Map<String, dynamic>> maps = await db.query('apps');
+  debugPrint(maps.toString());
+  return [
+    for (final {
+          'name': name as String,
+          'url': url as String,
+          'logo': logo as String
+        } in maps)
+      App(name: name, url: url, logo: logo)
+  ];
 }
