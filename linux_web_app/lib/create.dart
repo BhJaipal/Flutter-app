@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:linux_web_app/db_helper.dart';
 
 class Create extends StatefulWidget {
   const Create({super.key});
@@ -12,6 +12,16 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
   TextEditingController urlController = TextEditingController();
+
+  Map<String, bool>? status;
+
+  Future<void> insertApp() async {
+    App app = App(
+        name: nameController.text,
+        url: urlController.text,
+        logo: "unknown.jpg");
+    status = await DbHelper().insertApp(app);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +43,28 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      if (status != null)
+                        (status!["status"] == false)
+                            ? const Padding(
+                                padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                                child: Text(
+                                  "Error, Could not add the app",
+                                  style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold),
+                                ))
+                            : const Padding(
+                                padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                                child: Text(
+                                  "App Added",
+                                  style: TextStyle(
+                                      color: Colors.greenAccent,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(100, 100, 50, 50),
+                        padding: EdgeInsets.fromLTRB(
+                            10, (status == null ? 100 : 10), 50, 50),
                         child: TextFormField(
                           controller: nameController,
                           style: const TextStyle(color: Colors.white),
@@ -63,7 +93,7 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(100, 0, 50, 50),
+                        padding: const EdgeInsets.fromLTRB(10, 0, 50, 50),
                         child: TextFormField(
                           controller: urlController,
                           style: const TextStyle(color: Colors.white),
@@ -105,20 +135,17 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                       ),
                       ElevatedButton(
                         style: const ButtonStyle(
+                            shape: MaterialStatePropertyAll(
+                                BeveledRectangleBorder()),
                             backgroundColor: MaterialStatePropertyAll(
                                 Colors.lightBlueAccent)),
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            App app = App(
-                                name: nameController.text,
-                                url: urlController.text,
-                                logo: "logo.png");
-                            debugPrint(app.toString());
-                            insertApp(app);
+                            insertApp();
                           }
                         },
                         child: const Text('Submit'),
-                      ),
+                      )
                     ],
                   ),
                 ),
@@ -158,36 +185,5 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
         ),
       ),
     );
-  }
-}
-
-final database =
-   openDatabase("./../data/apps.db", version: 1, onCreate: (db, version) {
-  db.execute(
-      "CREATE TABLE IF NOT EXISTS apps(name VARCHAR(30), url VARCHAR(100), logo VARCHAR(50))");
-  version = 1;
-});
-
-Future<void> insertApp(App app) async {
-  final db = await database;
-  await db.insert(
-    'apps',
-    app.toMap(),
-    conflictAlgorithm: ConflictAlgorithm.replace,
-  );
-}
-
-class App {
-  String name;
-  String url;
-  String logo;
-  App({required this.name, required this.url, required this.logo});
-  Map<String, dynamic> toMap() {
-    return {"name": name, "url": url, "logo": logo};
-  }
-
-  @override
-  String toString() {
-    return 'App{name: $name, url: $url, logo: $logo}';
   }
 }
