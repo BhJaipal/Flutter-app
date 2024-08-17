@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:linux_web_app/create.dart';
 import 'package:linux_web_app/db_helper.dart';
 import "package:sqflite_common_ffi/sqflite_ffi.dart";

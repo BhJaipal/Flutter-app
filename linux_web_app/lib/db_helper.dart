@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -13,7 +15,6 @@ class DbHelper {
     databaseFactory = databaseFactoryFfi;
   }
   Future<void> init() async {
-    print(join(await getDatabasesPath(), dbName));
     db = await openDatabase(join(await getDatabasesPath(), dbName), version: 1,
         onCreate: (Database db2, int version) {
       db2.execute(
@@ -29,8 +30,9 @@ class DbHelper {
       int res = await db!.insert(
         'apps',
         app.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        conflictAlgorithm: ConflictAlgorithm.fail,
       );
+      debugPrint("Res: $res");
       if (res != 0) {
         return {"status": true};
       } else {
@@ -49,7 +51,6 @@ class DbHelper {
           "CREATE TABLE IF NOT EXISTS apps(name VARCHAR(30), url VARCHAR(100), logo VARCHAR(50))");
     });
     if (db == null) {
-      print("db is null");
       throw Exception("Db is null");
     }
     final List<Map<String, dynamic>> maps = await db!.query('apps');
@@ -61,6 +62,24 @@ class DbHelper {
           } in maps)
         App(name: app, url: url, logo: logo)
     ];
+  }
+
+  Future<void> editApp(App app, String name) async {
+    init();
+    db = await openDatabase(join(await getDatabasesPath(), dbName), version: 1,
+        onCreate: (Database db2, int version) {
+      db2.execute(
+          "CREATE TABLE IF NOT EXISTS apps(name VARCHAR(30), url VARCHAR(100), logo VARCHAR(50))");
+    });
+    if (db == null) {
+      throw Exception("Db is null");
+    }
+    int res = await db!.update("app", app.toMap(),
+        where: 'app=?',
+        whereArgs: [name],
+        conflictAlgorithm: ConflictAlgorithm.fail);
+
+    return Future.value();
   }
 }
 
