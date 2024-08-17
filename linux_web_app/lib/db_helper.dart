@@ -32,7 +32,7 @@ class DbHelper {
         app.toMap(),
         conflictAlgorithm: ConflictAlgorithm.fail,
       );
-      debugPrint("Res: $res");
+      print("Res: $res");
       if (res != 0) {
         return {"status": true};
       } else {
