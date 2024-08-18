@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DbHelper {
-  String dbName = '../../../data/apps.db';
+  String dbName = 'apps.db';
   String tableName = 'apps';
   String colName = 'name';
   String colUrl = 'url';
@@ -30,9 +30,8 @@ class DbHelper {
       int res = await db!.insert(
         'apps',
         app.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.fail,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
-      print("Res: $res");
       if (res != 0) {
         return {"status": true};
       } else {
@@ -64,7 +63,7 @@ class DbHelper {
     ];
   }
 
-  Future<void> editApp(App app, String name) async {
+  Future<int> editApp(App updatedApp, App app) async {
     init();
     db = await openDatabase(join(await getDatabasesPath(), dbName), version: 1,
         onCreate: (Database db2, int version) {
@@ -74,12 +73,11 @@ class DbHelper {
     if (db == null) {
       throw Exception("Db is null");
     }
-    int res = await db!.update("app", app.toMap(),
-        where: 'app=?',
-        whereArgs: [name],
+    int res = await db!.update("app", updatedApp.toMap(),
+        where: 'app=?, logo=?, url=?',
+        whereArgs: [app.name, app.logo, app.url],
         conflictAlgorithm: ConflictAlgorithm.fail);
-
-    return Future.value();
+    return res;
   }
 }
 

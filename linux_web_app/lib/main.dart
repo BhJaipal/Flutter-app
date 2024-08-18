@@ -1,12 +1,29 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:linux_web_app/create.dart';
 import 'package:linux_web_app/db_helper.dart';
+import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
 import "package:sqflite_common_ffi/sqflite_ffi.dart";
 
-Future<void> main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Directory dir = Directory("data");
+  if (!await dir.exists()) {
+    dir.create();
+  }
+  final file = File("data/apps.db");
+  if (!await file.exists()) {
+    file.create(recursive: true);
+  }
   sqfliteFfiInit();
+  Directory? down = await getDownloadsDirectory();
+  String dbFullPath = down!.path;
+  dbFullPath += "/../Desktop/Flutter-app/linux_web_app/data/";
   databaseFactory = databaseFactoryFfi;
+  databaseFactory.setDatabasesPath(dbFullPath);
+  Logger().d(await getDatabasesPath());
   runApp(const MyApp());
   return Future.value();
 }
@@ -84,9 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
         child: ListView(
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           children: <Widget>[
             FutureBuilder<List<App>>(
               future: getApps(),
@@ -95,19 +109,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   return const ProgressIndicatorExample();
                 } else if (snapshot.hasError) {
                   return Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-                      child: Center(
-                          child: Text(
+                    padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
+                    child: Center(
+                      child: Text(
                         'Error loading apps: ${snapshot.error}',
                         style: const TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 40),
-                      )));
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 40,
+                        ),
+                      ),
+                    ),
+                  );
                 } else if (!snapshot.hasData) {
                   return const Text(
                     'No apps found.',
-                    style: TextStyle(color: Colors.redAccent),
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                    ),
                   );
                 } else {
                   final apps = snapshot.data!;
@@ -118,7 +139,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text(
                           "Apps List is empty",
                           style: TextStyle(
-                              fontSize: 40, fontWeight: FontWeight.bold),
+                            color: Colors.white,
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     );
@@ -137,8 +161,9 @@ class _MyHomePageState extends State<MyHomePage> {
                           tileColor: Colors.blueAccent,
                           style: ListTileStyle.drawer,
                           shape: const RoundedRectangleBorder(
-                              side: BorderSide(
-                                  color: Color(0xFF005AA8), width: 2)),
+                            side:
+                                BorderSide(color: Color(0xFF005AA8), width: 2),
+                          ),
                           leading: Image.asset('assets/${app.logo}'),
                           title: Text(app.name),
                           subtitle: Text(app.url),
