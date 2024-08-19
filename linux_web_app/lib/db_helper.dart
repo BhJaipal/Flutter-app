@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DbHelper {
@@ -32,7 +36,25 @@ class DbHelper {
         app.toMap(),
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
+      String appName = app.name;
+      String fileAppName = app.name
+          .split(" ")
+          .map((e) => e.characters.first.toUpperCase() + e.substring(1))
+          .join("");
       if (res != 0) {
+        Directory docs = await getApplicationDocumentsDirectory();
+        File desktopFile = File(
+            "${docs.path}/../.local/share/applications/com.WebApps.$appName.desktop");
+        await desktopFile.create(recursive: true);
+        await desktopFile.writeAsString("""
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=$fileAppName
+Exec=xdg-open "${app.url}"
+Icon=~/Desktop/Flutter-app/linux_web_app/${app.logo}
+        """);
         return {"status": true};
       } else {
         return {"status": false};
@@ -73,11 +95,33 @@ class DbHelper {
     if (db == null) {
       throw Exception("Db is null");
     }
-    int res = await db!.update("app", updatedApp.toMap(),
-        where: 'app=?, logo=?, url=?',
-        whereArgs: [app.name, app.logo, app.url],
-        conflictAlgorithm: ConflictAlgorithm.fail);
-    return res;
+    try {
+      int res = await db!.update("apps", updatedApp.toMap(),
+          where: 'app=? AND url=? AND logo=?',
+          whereArgs: [app.name, app.url, app.logo],
+          conflictAlgorithm: ConflictAlgorithm.fail);
+      return res;
+    } catch (e) {
+      Logger().d(e, error: e);
+      return 0;
+    }
+  }
+
+  Future<int> deleteApp(App app) async {
+    init();
+    db = await openDatabase(join(await getDatabasesPath(), dbName), version: 1,
+        onCreate: (Database db2, int version) {
+      db2.execute(
+          "CREATE TABLE IF NOT EXISTS apps(name VARCHAR(30), url VARCHAR(100), logo VARCHAR(50))");
+    });
+    if (db == null) {
+      throw Exception("Db is null");
+    }
+    return await db!.delete(
+      'apps',
+      where: 'app=? AND url=? AND logo=?',
+      whereArgs: [app.name, app.url, app.logo],
+    );
   }
 }
 

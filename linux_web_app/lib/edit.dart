@@ -11,22 +11,37 @@ class Edit extends StatefulWidget {
   final App app;
 
   @override
-  State<Edit> createState() => _EditState();
+  // ignore: no_logic_in_create_state
+  State<Edit> createState() => _EditState(app: app);
 }
 
 class _EditState extends State<Edit> {
+  final App app;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController nameController = TextEditingController();
-  TextEditingController urlController = TextEditingController();
-  TextEditingController logoController = TextEditingController();
+  late TextEditingController nameController;
+  late TextEditingController urlController;
+  late TextEditingController logoController;
   TextEditingController? logoCategoryController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: app.name);
+    urlController = TextEditingController(text: app.url);
+    logoController = TextEditingController(text: app.logo);
+  }
+
+  _EditState({required this.app});
 
   Future<void> editApp() async {
     App updatedApp = App(
-        name: nameController.text,
-        url: urlController.text,
-        logo: "unknown.jpg");
-    status = {"status": await DbHelper().editApp(updatedApp, widget.app)};
+      name: nameController.text,
+      url: urlController.text,
+      logo:
+          "assets/icons/${logoCategoryController!.value.text.toLowerCase()}/${logoController.value.text}.svg",
+    );
+    status = {"status": await DbHelper().editApp(updatedApp, app)};
+    Logger().d(status);
   }
 
   Future<List<String>> icons(String category) async {
@@ -46,9 +61,10 @@ class _EditState extends State<Edit> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(243, 15, 15, 15),
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text("Create"),
+        title: const Text("Edit page"),
       ),
       body: Center(
         child: SafeArea(
@@ -62,113 +78,120 @@ class _EditState extends State<Edit> {
                   width: 500,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      if (status != null)
-                        (status!["status"] == 0)
-                            ? const Padding(
-                                padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
-                                child: Text(
-                                  "Error, Could not add the app",
-                                  style: TextStyle(
-                                      color: Colors.redAccent,
-                                      fontWeight: FontWeight.bold),
-                                ))
-                            : const Padding(
-                                padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
-                                child: Text(
-                                  "App updated",
-                                  style: TextStyle(
-                                      color: Colors.greenAccent,
-                                      fontWeight: FontWeight.bold),
-                                ),
+                    children: (status != null)
+                        ? [
+                            (status!["status"] == 0)
+                                ? const Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 150, 0, 0),
+                                    child: Text(
+                                      "Error, Could not edit the app",
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 40,
+                                      ),
+                                    ),
+                                  )
+                                : const Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 150, 0, 0),
+                                    child: Text(
+                                      "App updated",
+                                      style: TextStyle(
+                                        color: Colors.greenAccent,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 40,
+                                      ),
+                                    ),
+                                  ),
+                          ]
+                        : [
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                  10, (status == null ? 100 : 10), 50, 50),
+                              child: TextFormField(
+                                controller: nameController,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: const InputDecoration(
+                                    hintText: 'Enter App name',
+                                    hintStyle: TextStyle(color: Colors.white),
+                                    border: OutlineInputBorder()),
+                                validator: (String? value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a name';
+                                  }
+                                  if (value.length <= 3) {
+                                    return "Name must be longer than 3 letters";
+                                  }
+                                  int isSpace = 1;
+                                  for (var element in value.runes) {
+                                    if (" " != String.fromCharCode(element)) {
+                                      isSpace = 0;
+                                    }
+                                  }
+                                  if (isSpace == 1) {
+                                    return "Name must not be only spaces";
+                                  }
+                                  return null;
+                                },
                               ),
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(
-                            10, (status == null ? 100 : 10), 50, 50),
-                        child: TextFormField(
-                          initialValue: widget.app.name,
-                          controller: nameController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                              hintText: 'Enter App name',
-                              hintStyle: TextStyle(color: Colors.white),
-                              border: OutlineInputBorder()),
-                          validator: (String? value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a name';
-                            }
-                            if (value.length <= 3) {
-                              return "Name must be longer than 3 letters";
-                            }
-                            int isSpace = 1;
-                            for (var element in value.runes) {
-                              if (" " != String.fromCharCode(element)) {
-                                isSpace = 0;
-                              }
-                            }
-                            if (isSpace == 1) {
-                              return "Name must not be only spaces";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 0, 50, 50),
-                        child: TextFormField(
-                          initialValue: widget.app.url,
-                          controller: urlController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: const InputDecoration(
-                              hintText: 'Enter URL',
-                              hintStyle: TextStyle(color: Colors.white),
-                              border: OutlineInputBorder()),
-                          validator: (String? value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter a URL';
-                            }
-                            if (value.length <= 3) {
-                              return "Name must be longer than 3 letters";
-                            }
-                            if (!(value.startsWith("http://") ||
-                                value.startsWith("https://"))) {
-                              return "URL must start with http:// or https://";
-                            }
-                            if (!((value.startsWith("http://") &&
-                                    value.split("http://")[1].contains(".")) ||
-                                (value.startsWith("https://") &&
-                                    value
-                                        .split("https://")[1]
-                                        .contains(".")))) {
-                              return "URL must have a top domain like .com .net .org .app .io";
-                            }
-                            int isSpace = 1;
-                            for (var element in value.runes) {
-                              if (" " != String.fromCharCode(element)) {
-                                isSpace = 0;
-                              }
-                            }
-                            if (isSpace == 1) {
-                              return "Name must not be only spaces";
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: const ButtonStyle(
-                            shape: MaterialStatePropertyAll(
-                                BeveledRectangleBorder()),
-                            backgroundColor: MaterialStatePropertyAll(
-                                Colors.lightBlueAccent)),
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            editApp();
-                          }
-                        },
-                        child: const Text('Submit'),
-                      )
-                    ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 0, 50, 50),
+                              child: TextFormField(
+                                controller: urlController,
+                                style: const TextStyle(color: Colors.white),
+                                decoration: const InputDecoration(
+                                    hintText: 'Enter URL',
+                                    hintStyle: TextStyle(color: Colors.white),
+                                    border: OutlineInputBorder()),
+                                validator: (String? value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a URL';
+                                  }
+                                  if (value.length <= 3) {
+                                    return "Name must be longer than 3 letters";
+                                  }
+                                  if (!(value.startsWith("http://") ||
+                                      value.startsWith("https://"))) {
+                                    return "URL must start with http:// or https://";
+                                  }
+                                  if (!((value.startsWith("http://") &&
+                                          value
+                                              .split("http://")[1]
+                                              .contains(".")) ||
+                                      (value.startsWith("https://") &&
+                                          value
+                                              .split("https://")[1]
+                                              .contains(".")))) {
+                                    return "URL must have a top domain like .com .net .org .app .io";
+                                  }
+                                  int isSpace = 1;
+                                  for (var element in value.runes) {
+                                    if (" " != String.fromCharCode(element)) {
+                                      isSpace = 0;
+                                    }
+                                  }
+                                  if (isSpace == 1) {
+                                    return "Name must not be only spaces";
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            ElevatedButton(
+                              style: const ButtonStyle(
+                                  shape: MaterialStatePropertyAll(
+                                      BeveledRectangleBorder()),
+                                  backgroundColor: MaterialStatePropertyAll(
+                                      Colors.lightBlueAccent)),
+                              onPressed: () {
+                                if (_formKey.currentState!.validate()) {
+                                  editApp();
+                                }
+                              },
+                              child: const Text('Submit'),
+                            )
+                          ],
                   ),
                 ),
                 SizedBox(
@@ -189,16 +212,9 @@ class _EditState extends State<Edit> {
                                 const RoundedRectangleBorder(),
                               ),
                             ),
-                            child: SvgPicture.asset(
-                              "assets/icons/places/folder-Arch.svg",
-                              width: 150,
-                              clipBehavior: Clip.hardEdge,
-                              height: 150,
-                              matchTextDirection: true,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.transparent,
-                                BlendMode.color,
-                              ),
+                            child: const Icon(
+                              Icons.edit,
+                              size: 150,
                             ),
                             onPressed: () {
                               showDialog(
@@ -207,20 +223,6 @@ class _EditState extends State<Edit> {
                                     return AlertDialog(
                                       backgroundColor:
                                           const Color.fromRGBO(9, 45, 99, 1),
-                                      actions: [
-                                        TextButton(
-                                          style: TextButton.styleFrom(
-                                            textStyle: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.lightBlueAccent,
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            Logger().d("Selected");
-                                          },
-                                          child: const Text("Select"),
-                                        ),
-                                      ],
                                       content: SizedBox(
                                         height: 300,
                                         width: 300,

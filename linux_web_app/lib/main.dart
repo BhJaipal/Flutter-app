@@ -6,9 +6,16 @@ import 'package:linux_web_app/create.dart';
 import 'package:linux_web_app/db_helper.dart';
 import 'package:linux_web_app/edit.dart';
 import 'package:logger/logger.dart';
+import 'package:path_provider/path_provider.dart';
 import "package:sqflite_common_ffi/sqflite_ffi.dart";
 
 Future<void> main() async {
+  Directory iconsDir = Directory(
+      "${(await getApplicationDocumentsDirectory()).path}../.local/share/icons/MyWebApps");
+  if (!await iconsDir.exists()) {
+    iconsDir.create(recursive: true);
+  }
+
   WidgetsFlutterBinding.ensureInitialized();
   databaseFactory = databaseFactoryFfi;
   Directory dir = Directory("data");
@@ -66,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(243, 15, 15, 15),
       drawer: NavigationDrawer(
         backgroundColor: Colors.lightBlueAccent.shade400,
         children: [
@@ -159,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.fromLTRB(
                             300, index == 0 ? 100 : 0, 300, 0),
                         child: ListTile(
-                          tileColor: Colors.blue,
+                          tileColor: Colors.lightBlue,
                           style: ListTileStyle.drawer,
                           shape: const RoundedRectangleBorder(
                             side: BorderSide(
@@ -172,9 +180,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               ? Image.asset('assets/${app.logo}')
                               : SvgPicture.asset(
                                   app.logo,
-                                  width: 150,
+                                  width: 50,
                                   clipBehavior: Clip.hardEdge,
-                                  height: 150,
+                                  height: 50,
                                   matchTextDirection: true,
                                   colorFilter: const ColorFilter.mode(
                                     Colors.transparent,
@@ -183,16 +191,35 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                           title: Text(app.name),
                           subtitle: Text(app.url),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => Edit(app: app),
-                                ),
-                              );
-                            },
+                          trailing: Wrap(
+                            spacing: 10,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => Edit(app: app),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  DbHelper().deleteApp(app);
+                                  Navigator.pushAndRemoveUntil(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => const MyHomePage(
+                                              title: "Cosmic Web App",
+                                            )),
+                                    (route) => false,
+                                  );
+                                },
+                              )
+                            ],
                           ),
                         ),
                       );
@@ -200,8 +227,27 @@ class _MyHomePageState extends State<MyHomePage> {
                   );
                 }
               },
-            )
+            ),
           ],
+        ),
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 50, 50),
+        child: FloatingActionButton(
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(20))),
+          foregroundColor: Colors.blueAccent,
+          child: const Icon(Icons.refresh),
+          onPressed: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const MyHomePage(
+                        title: "Cosmic Web App",
+                      )),
+              (route) => false,
+            );
+          },
         ),
       ),
     );
