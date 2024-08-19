@@ -1,14 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:linux_web_app/create.dart';
 import 'package:linux_web_app/db_helper.dart';
+import 'package:linux_web_app/edit.dart';
 import 'package:logger/logger.dart';
-import 'package:path_provider/path_provider.dart';
 import "package:sqflite_common_ffi/sqflite_ffi.dart";
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  databaseFactory = databaseFactoryFfi;
   Directory dir = Directory("data");
   if (!await dir.exists()) {
     dir.create();
@@ -18,10 +20,9 @@ Future<void> main() async {
     file.create(recursive: true);
   }
   sqfliteFfiInit();
-  Directory? down = await getDownloadsDirectory();
-  String dbFullPath = down!.path;
-  dbFullPath += "/../Desktop/Flutter-app/linux_web_app/data/";
-  databaseFactory = databaseFactoryFfi;
+  String down = await getDatabasesPath();
+  String dbFullPath = down;
+  dbFullPath += "/../../../data/";
   databaseFactory.setDatabasesPath(dbFullPath);
   Logger().d(await getDatabasesPath());
   runApp(const MyApp());
@@ -158,15 +159,41 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.fromLTRB(
                             300, index == 0 ? 100 : 0, 300, 0),
                         child: ListTile(
-                          tileColor: Colors.blueAccent,
+                          tileColor: Colors.blue,
                           style: ListTileStyle.drawer,
                           shape: const RoundedRectangleBorder(
-                            side:
-                                BorderSide(color: Color(0xFF005AA8), width: 2),
+                            side: BorderSide(
+                              color: Color.fromARGB(255, 1, 90, 163),
+                              width: 1,
+                            ),
                           ),
-                          leading: Image.asset('assets/${app.logo}'),
+                          leading: app.logo.endsWith(".jpg") ||
+                                  app.logo.endsWith(".png")
+                              ? Image.asset('assets/${app.logo}')
+                              : SvgPicture.asset(
+                                  app.logo,
+                                  width: 150,
+                                  clipBehavior: Clip.hardEdge,
+                                  height: 150,
+                                  matchTextDirection: true,
+                                  colorFilter: const ColorFilter.mode(
+                                    Colors.transparent,
+                                    BlendMode.color,
+                                  ),
+                                ),
                           title: Text(app.name),
                           subtitle: Text(app.url),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => Edit(app: app),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },

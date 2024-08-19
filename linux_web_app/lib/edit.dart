@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:linux_web_app/db_helper.dart';
+import 'package:logger/logger.dart';
 
 class Edit extends StatefulWidget {
-  const Edit({super.key});
+  const Edit({super.key, required this.app});
+
+  final App app;
 
   @override
   State<Edit> createState() => _EditState();
@@ -12,16 +18,30 @@ class _EditState extends State<Edit> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController nameController = TextEditingController();
   TextEditingController urlController = TextEditingController();
+  TextEditingController logoController = TextEditingController();
+  TextEditingController? logoCategoryController = TextEditingController();
 
   Future<void> editApp() async {
-    App app = App(
+    App updatedApp = App(
         name: nameController.text,
         url: urlController.text,
         logo: "unknown.jpg");
-    status = await DbHelper().insertApp(app);
+    status = {"status": await DbHelper().editApp(updatedApp, widget.app)};
   }
 
-  Map<String, bool>? status;
+  Future<List<String>> icons(String category) async {
+    Logger().d(category);
+    List<String> out = [];
+    category = category.toLowerCase();
+    List<FileSystemEntity> list =
+        await Directory("assets/icons/$category").list().toList();
+    for (var e in list) {
+      out.add(e.path);
+    }
+    return out;
+  }
+
+  Map<String, int>? status;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +64,7 @@ class _EditState extends State<Edit> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       if (status != null)
-                        (status!["status"] == false)
+                        (status!["status"] == 0)
                             ? const Padding(
                                 padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
                                 child: Text(
@@ -56,7 +76,7 @@ class _EditState extends State<Edit> {
                             : const Padding(
                                 padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
                                 child: Text(
-                                  "App Added",
+                                  "App updated",
                                   style: TextStyle(
                                       color: Colors.greenAccent,
                                       fontWeight: FontWeight.bold),
@@ -66,6 +86,7 @@ class _EditState extends State<Edit> {
                         padding: EdgeInsets.fromLTRB(
                             10, (status == null ? 100 : 10), 50, 50),
                         child: TextFormField(
+                          initialValue: widget.app.name,
                           controller: nameController,
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
@@ -95,6 +116,7 @@ class _EditState extends State<Edit> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(10, 0, 50, 50),
                         child: TextFormField(
+                          initialValue: widget.app.url,
                           controller: urlController,
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
@@ -155,27 +177,259 @@ class _EditState extends State<Edit> {
                     children: [
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0, 100, 0, 0),
-                        child: Image.asset(
-                          "assets/unknown.jpg",
-                          height: 100,
-                          width: 100,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(10, 20, 0, 20),
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.lightBlueAccent)),
-                          child: const Text(
-                            "Select",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                        child: ButtonTheme(
+                          minWidth: 150,
+                          height: 150,
+                          child: ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor:
+                                  MaterialStateProperty.all(Colors.transparent),
+                              elevation: MaterialStateProperty.all(0),
+                              shape: MaterialStateProperty.all(
+                                const RoundedRectangleBorder(),
+                              ),
+                            ),
+                            child: SvgPicture.asset(
+                              "assets/icons/places/folder-Arch.svg",
+                              width: 150,
+                              clipBehavior: Clip.hardEdge,
+                              height: 150,
+                              matchTextDirection: true,
+                              colorFilter: const ColorFilter.mode(
+                                Colors.transparent,
+                                BlendMode.color,
+                              ),
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      backgroundColor:
+                                          const Color.fromRGBO(9, 45, 99, 1),
+                                      actions: [
+                                        TextButton(
+                                          style: TextButton.styleFrom(
+                                            textStyle: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.lightBlueAccent,
+                                            ),
+                                          ),
+                                          onPressed: () {
+                                            Logger().d("Selected");
+                                          },
+                                          child: const Text("Select"),
+                                        ),
+                                      ],
+                                      content: SizedBox(
+                                        height: 300,
+                                        width: 300,
+                                        child: Column(children: [
+                                          const Text(
+                                            "Select logo",
+                                            style: TextStyle(
+                                              color: Colors.greenAccent,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 30,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 50, 0, 50),
+                                            child: DropdownMenu(
+                                                width: 200,
+                                                menuStyle: MenuStyle(
+                                                  fixedSize:
+                                                      MaterialStateProperty.all(
+                                                    const Size(200, 240),
+                                                  ),
+                                                  side:
+                                                      MaterialStateProperty.all(
+                                                    const BorderSide(
+                                                      color: Colors.greenAccent,
+                                                      width: 1,
+                                                    ),
+                                                  ),
+                                                ),
+                                                textStyle: const TextStyle(
+                                                  color: Colors.green,
+                                                ),
+                                                label: const Text(
+                                                  "Logo Categories",
+                                                  style: TextStyle(
+                                                    color: Colors.greenAccent,
+                                                  ),
+                                                ),
+                                                controller:
+                                                    logoCategoryController,
+                                                dropdownMenuEntries: [
+                                                  "app",
+                                                  "applets",
+                                                  "places",
+                                                  "preferences",
+                                                  "devices",
+                                                  "categories"
+                                                ]
+                                                    .map<
+                                                            DropdownMenuEntry<
+                                                                String>>(
+                                                        (String value) =>
+                                                            DropdownMenuEntry(
+                                                              label: value
+                                                                      .characters
+                                                                      .first
+                                                                      .toUpperCase() +
+                                                                  value
+                                                                      .substring(
+                                                                          1),
+                                                              value: value,
+                                                              style:
+                                                                  ButtonStyle(
+                                                                backgroundColor:
+                                                                    MaterialStateProperty
+                                                                        .all(Colors
+                                                                            .white),
+                                                                foregroundColor:
+                                                                    MaterialStateProperty
+                                                                        .all(Colors
+                                                                            .green),
+                                                              ),
+                                                            ))
+                                                    .toList()),
+                                          ),
+                                          logoCategoryController != null &&
+                                                  logoCategoryController!
+                                                      .value.text.isNotEmpty
+                                              ? FutureBuilder(
+                                                  future: icons(
+                                                      logoCategoryController!
+                                                          .value.text),
+                                                  builder: (context, snapshot) {
+                                                    if (snapshot.hasData) {
+                                                      List<DropdownMenuEntry>
+                                                          entries = [];
+                                                      for (var element
+                                                          in snapshot.data
+                                                              as List<String>) {
+                                                        entries.add(
+                                                            DropdownMenuEntry(
+                                                          leadingIcon:
+                                                              SvgPicture.asset(
+                                                            element,
+                                                            width: 50,
+                                                            height: 50,
+                                                            clipBehavior:
+                                                                Clip.hardEdge,
+                                                            matchTextDirection:
+                                                                true,
+                                                            colorFilter:
+                                                                const ColorFilter
+                                                                    .mode(
+                                                              Colors
+                                                                  .transparent,
+                                                              BlendMode.color,
+                                                            ),
+                                                          ),
+                                                          label: element
+                                                              .split("/")
+                                                              .last
+                                                              .split(".svg")
+                                                              .first,
+                                                          value: element,
+                                                          style: ButtonStyle(
+                                                            textStyle:
+                                                                MaterialStateProperty
+                                                                    .all(
+                                                              const TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                              ),
+                                                            ),
+                                                            foregroundColor:
+                                                                MaterialStateProperty
+                                                                    .all(
+                                                              Colors.black,
+                                                            ),
+                                                            backgroundColor:
+                                                                MaterialStateProperty
+                                                                    .all(
+                                                              Colors.white,
+                                                            ),
+                                                          ),
+                                                        ));
+                                                      }
+                                                      return DropdownMenu(
+                                                        controller:
+                                                            logoController,
+                                                        textStyle:
+                                                            const TextStyle(
+                                                          color: Colors.green,
+                                                        ),
+                                                        width: 200,
+                                                        menuStyle: MenuStyle(
+                                                          fixedSize:
+                                                              MaterialStateProperty
+                                                                  .all(
+                                                            const Size(
+                                                                250, 275),
+                                                          ),
+                                                          backgroundColor:
+                                                              MaterialStateProperty
+                                                                  .all(
+                                                            Colors.white,
+                                                          ),
+                                                        ),
+                                                        label: const Text(
+                                                          "Select logo",
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .greenAccent,
+                                                          ),
+                                                        ),
+                                                        dropdownMenuEntries:
+                                                            entries,
+                                                      );
+                                                    } else if (snapshot
+                                                        .hasError) {
+                                                      return Text(
+                                                        snapshot.error
+                                                            .toString(),
+                                                        style: const TextStyle(
+                                                          color: Colors.red,
+                                                          fontSize: 30,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      );
+                                                    }
+                                                    return const Text(
+                                                      "Loading",
+                                                      style: TextStyle(
+                                                        color:
+                                                            Colors.greenAccent,
+                                                        fontSize: 30,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    );
+                                                  },
+                                                )
+                                              : const Text(
+                                                  "Select Category",
+                                                  style: TextStyle(
+                                                    color: Colors.greenAccent,
+                                                    fontSize: 30,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                        ]),
+                                      ),
+                                    );
+                                  });
+                            },
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 )
