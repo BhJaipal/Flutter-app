@@ -5,17 +5,11 @@ import 'package:flutter_svg/svg.dart';
 import 'package:linux_web_app/create.dart';
 import 'package:linux_web_app/db_helper.dart';
 import 'package:linux_web_app/edit.dart';
-import 'package:logger/logger.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:linux_web_app/utils.dart';
 import "package:sqflite_common_ffi/sqflite_ffi.dart";
 
 Future<void> main() async {
-  Directory iconsDir = Directory(
-      "${(await getApplicationDocumentsDirectory()).path}../.local/share/icons/MyWebApps");
-  if (!await iconsDir.exists()) {
-    iconsDir.create(recursive: true);
-  }
-
+  copyIcons();
   WidgetsFlutterBinding.ensureInitialized();
   databaseFactory = databaseFactoryFfi;
   Directory dir = Directory("data");
@@ -27,11 +21,7 @@ Future<void> main() async {
     file.create(recursive: true);
   }
   sqfliteFfiInit();
-  String down = await getDatabasesPath();
-  String dbFullPath = down;
-  dbFullPath += "/../../../data/";
-  databaseFactory.setDatabasesPath(dbFullPath);
-  Logger().d(await getDatabasesPath());
+  databaseFactory.setDatabasesPath("${Directory.current.path}/data");
   runApp(const MyApp());
   return Future.value();
 }

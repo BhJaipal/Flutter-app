@@ -53,7 +53,7 @@ Terminal=false
 Type=Application
 Name=$fileAppName
 Exec=xdg-open "${app.url}"
-Icon=~/Desktop/Flutter-app/linux_web_app/${app.logo}
+Icon=~/.var/app/com.flutter.WebApps/${app.logo}
         """);
         return {"status": true};
       } else {
