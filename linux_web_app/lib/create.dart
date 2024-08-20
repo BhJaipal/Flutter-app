@@ -250,12 +250,13 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                                                 controller:
                                                     logoCategoryController,
                                                 dropdownMenuEntries: [
-                                                  "app",
+                                                  "apps",
+                                                  "actions",
                                                   "applets",
+                                                  "categories",
+                                                  "devices",
                                                   "places",
                                                   "preferences",
-                                                  "devices",
-                                                  "categories"
                                                 ]
                                                     .map<
                                                             DropdownMenuEntry<

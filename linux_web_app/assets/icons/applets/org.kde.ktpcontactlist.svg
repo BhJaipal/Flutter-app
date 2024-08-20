@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    viewBox="0 0 256 256"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="org.kde.ktpcontactlist.svg">
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
+   sodipodi:docname="org.kde.ktpcontactlist.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -21,7 +21,6 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -35,16 +34,18 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1050"
+     inkscape:window-height="1006"
      id="namedview8"
      showgrid="false"
-     inkscape:zoom="0.921875"
-     inkscape:cx="-232.13559"
-     inkscape:cy="93.288124"
+     inkscape:zoom="1.3037281"
+     inkscape:cx="29.147181"
+     inkscape:cy="95.878886"
      inkscape:window-x="0"
-     inkscape:window-y="30"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2" />
+     inkscape:current-layer="svg2"
+     inkscape:document-rotation="0"
+     inkscape:pagecheckerboard="0" />
   <defs
      id="defs4">
     <style
@@ -219,18 +220,18 @@
     </linearGradient>
   </defs>
   <path
-     style="fill:currentColor;fill-opacity:0.5;stroke:none"
+     style="fill:#c0c6d8;fill-opacity:1;stroke:none;opacity:0.2"
      d="m 16,10 224,0 c 3.324,0 6,2.676 6,6 l 0,224 c 0,3.324 -2.676,6 -6,6 l -224,0 c -3.324,0 -6,-2.676 -6,-6 L 10,16 c 0,-3.324 2.676,-6 6,-6 z"
      class="ColorScheme-ButtonText"
      id="rect4240" />
   <path
-     style="fill:currentColor;fill-opacity:1;stroke:none"
+     style="fill:#242a3b;fill-opacity:1;stroke:none"
      d="m 16,12 224,0 c 2.216,0 4,1.784 4,4 l 0,224 c 0,2.216 -1.784,4 -4,4 l -224,0 c -2.216,0 -4,-1.784 -4,-4 L 12,16 c 0,-2.216 1.784,-4 4,-4 z"
      class="ColorScheme-Background"
      id="rect4238" />
   <rect
      class="ColorScheme-Text"
-     style="opacity:0.5;fill:currentColor;fill-opacity:1;stroke:none;stroke-width:0.92819148;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2"
+     style="opacity:1;fill:#489ab1;fill-opacity:1;stroke:none;stroke-width:0.92819148;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2"
      id="rect5114-3-4-2"
      width="216"
      height="35.999992"
@@ -240,7 +241,7 @@
      ry="0" />
   <rect
      class="ColorScheme-ViewBackground"
-     style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:0.92819148;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2"
+     style="fill:#272c3f;fill-opacity:1;stroke:none;stroke-width:0.92819148;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.2"
      id="rect5114-3-4"
      width="214"
      height="33.999943"

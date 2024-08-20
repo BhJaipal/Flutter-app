@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:linux_web_app/utils.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -53,7 +54,7 @@ Terminal=false
 Type=Application
 Name=$fileAppName
 Exec=xdg-open "${app.url}"
-Icon=~/.var/app/com.flutter.WebApps/${app.logo}
+Icon=${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${app.logo}
         """);
         return {"status": true};
       } else {
@@ -100,6 +101,18 @@ Icon=~/.var/app/com.flutter.WebApps/${app.logo}
           where: 'app=? AND url=? AND logo=?',
           whereArgs: [app.name, app.url, app.logo],
           conflictAlgorithm: ConflictAlgorithm.fail);
+
+      String appName = app.name;
+      Directory docs = await getApplicationDocumentsDirectory();
+      File desktopFile = File(
+          "${docs.path}/../.local/share/applications/com.WebApps.$appName.desktop");
+      String content = await desktopFile.readAsString();
+      await desktopFile.delete();
+      content = content.replaceAll(app.logo, updatedApp.logo);
+      content = content.replaceAll(app.url, updatedApp.url);
+      content = content.replaceAll(app.name, updatedApp.name);
+      desktopFile = File(
+          "${docs.path}/../.local/share/applications/com.WebApps.${updatedApp.name.split(' ').map((el) => el.characters.first.toUpperCase() + el.substring(1)).join()}.desktop");
       return res;
     } catch (e) {
       Logger().d(e, error: e);
@@ -117,11 +130,17 @@ Icon=~/.var/app/com.flutter.WebApps/${app.logo}
     if (db == null) {
       throw Exception("Db is null");
     }
-    return await db!.delete(
+    int res = await db!.delete(
       'apps',
       where: 'app=? AND url=? AND logo=?',
       whereArgs: [app.name, app.url, app.logo],
     );
+    String appName = app.name;
+    Directory docs = await getApplicationDocumentsDirectory();
+    File desktopFile = File(
+        "${docs.path}/../.local/share/applications/com.WebApps.$appName.desktop");
+    await desktopFile.delete();
+    return res;
   }
 }
 

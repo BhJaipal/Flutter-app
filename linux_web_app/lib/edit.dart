@@ -265,12 +265,13 @@ class _EditState extends State<Edit> {
                                                 controller:
                                                     logoCategoryController,
                                                 dropdownMenuEntries: [
-                                                  "app",
+                                                  "apps",
+                                                  "actions",
                                                   "applets",
-                                                  "places",
-                                                  "preferences",
+                                                  "categories",
                                                   "devices",
-                                                  "categories"
+                                                  "places",
+                                                  "preferences"
                                                 ]
                                                     .map<
                                                             DropdownMenuEntry<

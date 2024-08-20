@@ -4,7 +4,7 @@
    version="1.1"
    id="svg6"
    sodipodi:docname="org.kde.plasma.notes.svg"
-   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   inkscape:version="1.1.1 (3bf5ae0d25, 2021-09-20)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -14,33 +14,26 @@
   <sodipodi:namedview
      id="namedview8"
      pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     showgrid="true"
-     inkscape:zoom="1.84375"
-     inkscape:cx="105.49153"
-     inkscape:cy="173.55932"
+     showgrid="false"
+     inkscape:zoom="2.4296875"
+     inkscape:cx="128"
+     inkscape:cy="128"
      inkscape:window-width="1920"
-     inkscape:window-height="1002"
+     inkscape:window-height="1006"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg6">
-    <inkscape:grid
-       type="xygrid"
-       id="grid418" />
-  </sodipodi:namedview>
+     inkscape:current-layer="svg6" />
   <path
-     fill="#ffc169"
      color="#31363b"
-     d="M 10,35.000001 V 220 c 0,15.00001 10,25 24.899914,25 H 218.60386 C 235,245 245,235 245,220 V 35.000001 C 245,20 235,10 220,10 H 34.899914 C 20,10 10,20 10,35.000001 Z"
+     d="m 12.40733,12 v 232 h 232 V 12 Z"
      id="path2"
-     style="stroke-width:1.01293"
-     sodipodi:nodetypes="ccccccccc" />
+     style="fill:#489ab1;fill-opacity:1" />
   <path
      fill="currentcolor"
      color="#f2f2f2"
