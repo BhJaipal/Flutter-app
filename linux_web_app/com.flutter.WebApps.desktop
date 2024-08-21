@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Linux Web Apps
+Exec=/home/jaipal001/Desktop/Flutter-app/linux_web_app/build/linux/x64/release/bundle/linux_web_app
+Icon=/home/jaipal001/.var/app/com.flutter.WebApps/web_apps.svg
+Terminal=false
