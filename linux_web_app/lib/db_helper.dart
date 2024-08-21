@@ -28,13 +28,17 @@ class DbHelper {
     return Future.value();
   }
 
-  Future<Map<String, bool>> insertApp(App app) async {
+  Future<Map<String, bool>> insertApp(App app, {bool uploaded = false}) async {
     await init();
     try {
       if (db == null) return {"status": false};
       int res = await db!.insert(
         'apps',
-        app.toMap(),
+        {
+          "app": app.name,
+          "url": app.url,
+          "logo": !uploaded ? app.logo : app.logo.split("/").last
+        },
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
       String appName = app.name;
@@ -46,6 +50,12 @@ class DbHelper {
         Directory docs = await getApplicationDocumentsDirectory();
         File desktopFile = File(
             "${docs.path}/../.local/share/applications/com.WebApps.$appName.desktop");
+        if (uploaded) {
+          File(app.logo).copySync(
+              "${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${app.logo.split('/').last}");
+          File(app.logo).copySync(
+              "${Directory.current.path}/assets/new/${app.logo.split('/').last}");
+        }
         await desktopFile.create(recursive: true);
         await desktopFile.writeAsString("""
 [Desktop Entry]
@@ -53,8 +63,8 @@ Version=1.0
 Terminal=false
 Type=Application
 Name=$fileAppName
-Exec=xdg-open "${app.url}"
-Icon=${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${app.logo}
+Exec=${app.browser} "${app.url}"
+Icon=${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${!uploaded ? app.logo : app.logo.split('/').last}
         """);
         return {"status": true};
       } else {
@@ -86,7 +96,7 @@ Icon=${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${app.logo}
     ];
   }
 
-  Future<int> editApp(App updatedApp, App app) async {
+  Future<int> editApp(App updatedApp, App app, {bool uploaded = false}) async {
     init();
     db = await openDatabase(join(await getDatabasesPath(), dbName), version: 1,
         onCreate: (Database db2, int version) {
@@ -97,22 +107,50 @@ Icon=${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${app.logo}
       throw Exception("Db is null");
     }
     try {
-      int res = await db!.update("apps", updatedApp.toMap(),
+      int res = await db!.update(
+          "apps",
+          {
+            "app": updatedApp.name,
+            "url": updatedApp.url,
+            "logo":
+                !uploaded ? updatedApp.logo : updatedApp.logo.split("/").last
+          },
           where: 'app=? AND url=? AND logo=?',
           whereArgs: [app.name, app.url, app.logo],
           conflictAlgorithm: ConflictAlgorithm.fail);
 
-      String appName = app.name;
+      String fileAppName = app.name
+          .split(" ")
+          .map((e) => e.characters.first.toUpperCase() + e.substring(1))
+          .join("");
+
       Directory docs = await getApplicationDocumentsDirectory();
       File desktopFile = File(
-          "${docs.path}/../.local/share/applications/com.WebApps.$appName.desktop");
-      String content = await desktopFile.readAsString();
+          "${docs.path}/../.local/share/applications/com.WebApps.$fileAppName.desktop");
+      if (uploaded) {
+        File(app.logo).copySync(
+            "${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${updatedApp.logo.split('/').last}");
+        File(app.logo).copySync(
+            "${Directory.current.path}/assets/new/${updatedApp.logo.split('/').last}");
+      }
       await desktopFile.delete();
-      content = content.replaceAll(app.logo, updatedApp.logo);
-      content = content.replaceAll(app.url, updatedApp.url);
-      content = content.replaceAll(app.name, updatedApp.name);
+      fileAppName = app.name
+          .split(" ")
+          .map((e) => e.characters.first.toUpperCase() + e.substring(1))
+          .join("");
+
+      String appName = updatedApp.name;
       desktopFile = File(
           "${docs.path}/../.local/share/applications/com.WebApps.${updatedApp.name.split(' ').map((el) => el.characters.first.toUpperCase() + el.substring(1)).join()}.desktop");
+      desktopFile.writeAsString("""
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Type=Application
+Name=$appName
+Exec=${updatedApp.browser} "${updatedApp.url}"
+Icon=${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${!uploaded ? updatedApp.logo : updatedApp.logo.split('/').last}
+        """);
       return res;
     } catch (e) {
       Logger().d(e, error: e);
@@ -148,13 +186,18 @@ class App {
   String name;
   String url;
   String logo;
-  App({required this.name, required this.url, required this.logo});
+  String browser;
+  App(
+      {required this.name,
+      required this.url,
+      required this.logo,
+      this.browser = 'xdg-open'});
   Map<String, dynamic> toMap() {
     return {"app": name, "url": url, "logo": logo};
   }
 
   @override
   String toString() {
-    return 'App{name: $name, url: $url, logo: $logo}';
+    return 'App{name: $name, url: $url, logo: $logo, broswer: $browser}';
   }
 }

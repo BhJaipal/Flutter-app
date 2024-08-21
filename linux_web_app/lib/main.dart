@@ -167,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           leading: app.logo.endsWith(".jpg") ||
                                   app.logo.endsWith(".png")
-                              ? Image.asset('assets/${app.logo}')
+                              ? Image.asset('assets/new/${app.logo}')
                               : SvgPicture.asset(
                                   app.logo,
                                   width: 50,

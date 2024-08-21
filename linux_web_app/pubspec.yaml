@@ -41,6 +41,7 @@ dependencies:
     logger: ^2.4.0
     flutter_svg: ^2.0.10+1
     restart_app: ^1.2.1
+    file_picker: ^8.0.5
 
 dev_dependencies:
     flutter_test:
@@ -66,6 +67,7 @@ flutter:
     # To add assets to your application, add an assets section, like this:
     assets:
         - ./assets/unknown.jpg
+        - ./assets/new/
         - ./data/apps.db
         - ./assets/icons/
         - ./assets/icons/places/

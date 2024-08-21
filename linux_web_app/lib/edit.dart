@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:linux_web_app/db_helper.dart';
@@ -22,6 +23,15 @@ class _EditState extends State<Edit> {
   late TextEditingController urlController;
   late TextEditingController logoController;
   TextEditingController? logoCategoryController = TextEditingController();
+  late String? selectedFile;
+  bool uploaded = false;
+
+  late String browserController;
+  final Map<String, String> browsers = {
+    "Default": "xdg-open",
+    "Google Chrome": "flatpak run com.google.Chrome",
+    "Edge": "flatpak run com.microsoft.Edge",
+  };
 
   @override
   void initState() {
@@ -34,14 +44,36 @@ class _EditState extends State<Edit> {
   _EditState({required this.app});
 
   Future<void> editApp() async {
-    App updatedApp = App(
-      name: nameController.text,
-      url: urlController.text,
-      logo:
-          "assets/icons/${logoCategoryController!.value.text.toLowerCase()}/${logoController.value.text}.svg",
-    );
-    status = {"status": await DbHelper().editApp(updatedApp, app)};
-    Logger().d(status);
+    late App updatedApp;
+    if (!uploaded) {
+      updatedApp = App(
+        name: nameController.text,
+        url: urlController.text,
+        browser: browserController,
+        logo:
+            "assets/icons/${logoCategoryController!.value.text.toLowerCase()}/${logoController.value.text}.svg",
+      );
+    } else {
+      updatedApp = App(
+        name: nameController.text,
+        url: urlController.text,
+        browser: browserController,
+        logo: selectedFile!,
+      );
+    }
+    Map<String, int> res = {
+      "status": await DbHelper().editApp(updatedApp, app)
+    };
+    setState(() {
+      status = res;
+    });
+  }
+
+  Future<void> fileUpload() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(allowedExtensions: ["jpg", "png"]);
+    selectedFile = result!.files[0].path;
+    uploaded = true;
   }
 
   Future<List<String>> icons(String category) async {
@@ -178,6 +210,28 @@ class _EditState extends State<Edit> {
                                 },
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 0, 50, 50),
+                              child: DropdownMenu(
+                                textStyle: const TextStyle(color: Colors.white),
+                                label: const Text(
+                                  "Browsers",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onSelected: (value) {
+                                  setState(() {
+                                    browserController = value!;
+                                  });
+                                },
+                                dropdownMenuEntries: browsers.entries
+                                    .map<DropdownMenuEntry<String>>(
+                                        (entry) => DropdownMenuEntry(
+                                              value: entry.value,
+                                              label: entry.key,
+                                            ))
+                                    .toList(),
+                              ),
+                            ),
                             ElevatedButton(
                               style: const ButtonStyle(
                                   shape: MaterialStatePropertyAll(
@@ -237,7 +291,31 @@ class _EditState extends State<Edit> {
                                           ),
                                           Padding(
                                             padding: const EdgeInsets.fromLTRB(
-                                                0, 50, 0, 50),
+                                                0, 25, 0, 0),
+                                            child: ElevatedButton(
+                                              onPressed: fileUpload,
+                                              style: const ButtonStyle(
+                                                  backgroundColor:
+                                                      MaterialStatePropertyAll(
+                                                          Colors.blueAccent)),
+                                              child: const Row(
+                                                children: [
+                                                  Icon(Icons.upload),
+                                                  Text(
+                                                    "Upload",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 25, 0, 50),
                                             child: DropdownMenu(
                                                 width: 200,
                                                 menuStyle: MenuStyle(

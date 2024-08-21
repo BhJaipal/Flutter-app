@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:linux_web_app/db_helper.dart';
@@ -18,6 +19,15 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
   TextEditingController urlController = TextEditingController();
   TextEditingController? logoCategoryController = TextEditingController();
   TextEditingController logoController = TextEditingController();
+  late String browserController;
+  late String? selectedFile;
+  bool uploaded = false;
+
+  final Map<String, String> browsers = {
+    "Default": "xdg-open",
+    "Google Chrome": "flatpak run com.google.Chrome",
+    "Edge": "flatpak run com.microsoft.Edge",
+  };
 
   Future<List<String>> icons(String category) async {
     Logger().d(category);
@@ -32,15 +42,39 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
   }
 
   Map<String, bool>? status;
+  bool? statusBool;
 
   Future<void> insertApp() async {
-    App app = App(
-      name: nameController.text,
-      url: urlController.text,
-      logo:
-          "assets/icons/${logoCategoryController!.value.text.toLowerCase()}/${logoController.value.text}.svg",
-    );
-    status = await DbHelper().insertApp(app);
+    late App app;
+    if (uploaded) {
+      app = App(
+        name: nameController.text,
+        url: urlController.text,
+        logo: selectedFile!,
+        browser: browserController,
+      );
+    } else {
+      app = App(
+        name: nameController.text,
+        url: urlController.text,
+        browser: browserController,
+        logo:
+            "assets/icons/${logoCategoryController!.value.text.toLowerCase()}/${logoController.value.text}.svg",
+      );
+    }
+
+    Map<String, bool> res = await DbHelper().insertApp(app, uploaded: uploaded);
+    setState(() {
+      status = res;
+      statusBool = status!["status"];
+    });
+  }
+
+  Future<void> fileUpload() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(allowedExtensions: ["jpg", "png"]);
+    selectedFile = result!.files[0].path;
+    uploaded = true;
   }
 
   @override
@@ -63,9 +97,9 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                   width: 500,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: (status != null)
-                        ? [
-                            (status!["status"] == false)
+                    children: (statusBool != null)
+                        ? ([
+                            (!(statusBool!))
                                 ? const Padding(
                                     padding: EdgeInsets.fromLTRB(0, 150, 0, 0),
                                     child: Text(
@@ -88,7 +122,7 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                                       ),
                                     ),
                                   )
-                          ]
+                          ])
                         : [
                             Padding(
                               padding: EdgeInsets.fromLTRB(
@@ -163,6 +197,28 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                                 },
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 0, 50, 50),
+                              child: DropdownMenu(
+                                textStyle: const TextStyle(color: Colors.white),
+                                label: const Text(
+                                  "Browsers",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                onSelected: (value) {
+                                  setState(() {
+                                    browserController = value!;
+                                  });
+                                },
+                                dropdownMenuEntries: browsers.entries
+                                    .map<DropdownMenuEntry<String>>(
+                                        (entry) => DropdownMenuEntry(
+                                              value: entry.value,
+                                              label: entry.key,
+                                            ))
+                                    .toList(),
+                              ),
+                            ),
                             ElevatedButton(
                               style: const ButtonStyle(
                                 shape: MaterialStatePropertyAll(
@@ -222,7 +278,39 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                                           ),
                                           Padding(
                                             padding: const EdgeInsets.fromLTRB(
-                                                0, 50, 0, 50),
+                                                85, 25, 85, 0),
+                                            child: ElevatedButton(
+                                              onPressed: fileUpload,
+                                              style: const ButtonStyle(
+                                                backgroundColor:
+                                                    MaterialStatePropertyAll(
+                                                  Colors.blueAccent,
+                                                ),
+                                              ),
+                                              child: const Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceEvenly,
+                                                children: [
+                                                  Icon(
+                                                    Icons.upload,
+                                                    color: Colors.white,
+                                                  ),
+                                                  Text(
+                                                    "Upload",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                                0, 25, 0, 50),
                                             child: DropdownMenu(
                                                 width: 200,
                                                 menuStyle: MenuStyle(
@@ -347,6 +435,9 @@ class _CreateState extends State<Create> with SingleTickerProviderStateMixin {
                                                         ));
                                                       }
                                                       return DropdownMenu(
+                                                        onSelected: (value) {
+                                                          uploaded = false;
+                                                        },
                                                         controller:
                                                             logoController,
                                                         textStyle:
