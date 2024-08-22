@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:linux_web_app/utils.dart';
 import 'package:logger/logger.dart';
@@ -53,8 +54,13 @@ class DbHelper {
         if (uploaded) {
           File(app.logo).copySync(
               "${(await HomeDir()).path}/.var/app/com.flutter.WebApps/${app.logo.split('/').last}");
-          File(app.logo).copySync(
-              "${Directory.current.path}/assets/new/${app.logo.split('/').last}");
+          if (kDebugMode) {
+            File(app.logo).copySync(
+                "${Directory.current.path}/assets/new/${app.logo.split('/').last}");
+          } else {
+            File(app.logo).copySync(
+                "/home/jaipal001/Desktop/Flutter-app/linux_web_app/build/linux/x64/release/bundle/data/flutter_assets/assets/new/${app.logo.split('/').last}");
+          }
         }
         await desktopFile.create(recursive: true);
         await desktopFile.writeAsString("""
